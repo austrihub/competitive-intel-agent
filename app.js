@@ -46,7 +46,7 @@ async function analyze() {
       },
       body: JSON.stringify({
         model: "anthropic/claude-sonnet-4-5",
-        max_tokens: 2000,
+        max_tokens: 1500,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: `Analyze this company for competitive intelligence: ${query}` }
@@ -61,6 +61,7 @@ async function analyze() {
 
     // Extract the text from Claude's response
     console.log("Raw response:", JSON.stringify(data, null, 2));
+    console.log("Full data:", JSON.stringify(data, null, 2));
     const text = data.choices[0].message.content;
     if (!text) throw new Error("No response from agent. Try again.");
 
