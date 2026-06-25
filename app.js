@@ -1,6 +1,6 @@
-const API_KEY = "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"; 
+const API_KEY = "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";
 
-const SYSTEM_PROMPT = `You are a senior competitive intelligence analyst. When given a company name, search the web and return ONLY a valid JSON object with these exact keys — no markdown, no backticks, no explanation:
+const SYSTEM_PROMPT = `You are a senior competitive intelligence analyst. When given a company name, return ONLY a valid JSON object with these exact keys — no markdown, no backticks, no explanation:
 
 {
   "company": "string",
@@ -24,7 +24,6 @@ async function analyze() {
   const query = document.getElementById("query").value.trim();
   if (!query) return;
 
-  // UI: show loading state
   const btn = document.getElementById("runBtn");
   const status = document.getElementById("status");
   const error = document.getElementById("error");
@@ -32,20 +31,20 @@ async function analyze() {
 
   btn.disabled = true;
   btn.textContent = "Analyzing...";
-  status.textContent = "Searching the web...";
+  status.textContent = "Analyzing company...";
   status.classList.remove("hidden");
   error.classList.add("hidden");
   result.innerHTML = "";
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: "anthropic/claude-sonnet-4-5",
+        model: "llama-3.3-70b-versatile",
         max_tokens: 1500,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
@@ -55,20 +54,13 @@ async function analyze() {
     });
 
     const data = await response.json();
-
-    console.log("Status:", response.status);
     console.log("Response:", JSON.stringify(data, null, 2));
 
-    // Extract the text from Claude's response
-    console.log("Raw response:", JSON.stringify(data, null, 2));
-    console.log("Full data:", JSON.stringify(data, null, 2));
-    const text = data.choices[0].message.content;
+    const text = data.choices?.[0]?.message?.content;
     if (!text) throw new Error("No response from agent. Try again.");
 
     const clean = text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);
-
-    // Display it
     renderResult(parsed);
 
   } catch (err) {
@@ -86,7 +78,6 @@ function renderResult(d) {
 
   result.innerHTML = `
     <div class="result-card">
-
       <div class="card-header">
         <div>
           <div class="company-name">${d.company}</div>
@@ -155,12 +146,10 @@ function renderResult(d) {
         <div class="verdict-label">ANALYST VERDICT</div>
         <p class="verdict-text">${d.verdict}</p>
       </div>
-
     </div>
   `;
 }
 
-// Allow pressing Enter to trigger analyze
 document.getElementById("query").addEventListener("keydown", function(e) {
   if (e.key === "Enter") analyze();
 });
